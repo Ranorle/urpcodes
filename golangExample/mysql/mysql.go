@@ -29,7 +29,10 @@ func InitDB(dataSourceName string) error {
 // CloseDB 关闭数据库连接
 func CloseDB() {
 	if DB != nil {
-		DB.Close()
+		err := DB.Close()
+		if err != nil {
+			return
+		}
 		fmt.Println("Closed MySQL database connection")
 	}
 }
