@@ -9,7 +9,7 @@
 /coverage
 
 # production
-/build
+/golangServer/build
 
 # misc
 .DS_Store
