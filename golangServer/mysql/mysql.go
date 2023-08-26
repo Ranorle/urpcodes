@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
+	"log"
 )
 
 // DB 是一个全局数据库连接对象
@@ -22,7 +23,7 @@ func InitDB(dataSourceName string) error {
 		return err
 	}
 
-	fmt.Println("Connected to MySQL database")
+	log.Println("Connected to MySQL database")
 	return nil
 }
 
@@ -33,7 +34,7 @@ func CloseDB() {
 		if err != nil {
 			return
 		}
-		fmt.Println("Closed MySQL database connection")
+		log.Println("Closed MySQL database connection")
 	}
 }
 

@@ -1,11 +1,11 @@
 package middlewares
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"golangServer/csvhandler"
 	"golangServer/mysql"
+	"log"
 	"net/http"
 )
 
@@ -32,7 +32,7 @@ func HandleDataMid(c *gin.Context) {
 		// 使用 WebSocket 发送错误消息
 		errMsg := "outputDirectory not found in context"
 		if err := wsConn.WriteMessage(websocket.TextMessage, []byte(errMsg)); err != nil {
-			fmt.Println("Error sending WebSocket error message:", err)
+			log.Println("Error sending WebSocket error message:", err)
 		}
 
 		c.Abort()
@@ -44,7 +44,7 @@ func HandleDataMid(c *gin.Context) {
 		// 使用 WebSocket 发送错误消息
 		errMsg := "outputFolderName not found in context"
 		if err := wsConn.WriteMessage(websocket.TextMessage, []byte(errMsg)); err != nil {
-			fmt.Println("Error sending WebSocket error message:", err)
+			log.Println("Error sending WebSocket error message:", err)
 		}
 
 		c.Abort()
@@ -57,7 +57,7 @@ func HandleDataMid(c *gin.Context) {
 		// 使用 WebSocket 发送错误消息
 		errMsg := "outputDirectory is not a string"
 		if err := wsConn.WriteMessage(websocket.TextMessage, []byte(errMsg)); err != nil {
-			fmt.Println("Error sending WebSocket error message:", err)
+			log.Println("Error sending WebSocket error message:", err)
 		}
 
 		c.Abort()
@@ -69,7 +69,7 @@ func HandleDataMid(c *gin.Context) {
 		// 使用 WebSocket 发送错误消息
 		errMsg := "读取输出文件错误：" + err.Error()
 		if err := wsConn.WriteMessage(websocket.TextMessage, []byte(errMsg)); err != nil {
-			fmt.Println("Error sending WebSocket error message:", err)
+			log.Println("Error sending WebSocket error message:", err)
 		}
 
 		c.Abort()
@@ -79,7 +79,7 @@ func HandleDataMid(c *gin.Context) {
 	// 获取表头的字段数量
 	if len(records) == 0 {
 		if err := wsConn.WriteMessage(websocket.TextMessage, []byte("records is empty")); err != nil {
-			fmt.Println("Error sending WebSocket error message:", err)
+			log.Println("Error sending WebSocket error message:", err)
 		}
 	}
 	header := records[0]
@@ -93,7 +93,7 @@ func HandleDataMid(c *gin.Context) {
 		// 使用 WebSocket 发送错误消息
 		errMsg := "插入数据到数据库错误：" + err.Error()
 		if err := wsConn.WriteMessage(websocket.TextMessage, []byte(errMsg)); err != nil {
-			fmt.Println("Error sending WebSocket error message:", err)
+			log.Println("Error sending WebSocket error message:", err)
 		}
 		c.Abort()
 		return
@@ -105,7 +105,7 @@ func HandleDataMid(c *gin.Context) {
 		// 使用 WebSocket 发送错误消息
 		errMsg := "插入数据到数据库错误：" + err.Error()
 		if err := wsConn.WriteMessage(websocket.TextMessage, []byte(errMsg)); err != nil {
-			fmt.Println("Error sending WebSocket error message:", err)
+			log.Println("Error sending WebSocket error message:", err)
 		}
 		c.Abort()
 		return
@@ -113,11 +113,14 @@ func HandleDataMid(c *gin.Context) {
 	// 使用 WebSocket 发送成功消息
 	successMsg := "数据插入成功"
 	if err := wsConn.WriteMessage(websocket.TextMessage, []byte(successMsg)); err != nil {
-		fmt.Println("Error sending WebSocket success message:", err)
+		log.Println("Error sending WebSocket success message:", err)
 	}
 
-	err = wsConn.Close()
-	if err != nil {
-		fmt.Println("Error closing WebSocket connection:", err)
-	}
+	defer func(wsConn *websocket.Conn) {
+		err := wsConn.Close()
+		if err != nil {
+
+		}
+	}(wsConn)
+
 }

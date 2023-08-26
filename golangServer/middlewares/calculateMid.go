@@ -3,9 +3,9 @@
 package middlewares
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -21,14 +21,14 @@ func CalculateMid(c *gin.Context) {
 		return
 	}
 
-	IDFName, exists := c.Get("IDFName")
+	IDFPath, exists := c.Get("IDFPath")
 	if !exists {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "IDFName not found"})
 		c.Abort()
 		return
 	}
 
-	EPWName, exists := c.Get("EPWName")
+	EPWPath, exists := c.Get("EPWPath")
 	if !exists {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "EPWName not found"})
 		c.Abort()
@@ -51,20 +51,20 @@ func CalculateMid(c *gin.Context) {
 
 	err1 := os.MkdirAll(outputDirectory, os.ModePerm)
 	if err1 != nil {
-		fmt.Println("Error creating output directory:", err1)
+		log.Println("Error creating output directory:", err1)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 
 	energyPlusExec := `E:\EnergyPlus\energyplus.exe`
-	inputidfFilePath := `E:\EnergyPlus\inputidf\` + IDFName.(string)
-	inputepwFilePath := `E:\EnergyPlus\inputweather\` + EPWName.(string)
+	inputidfFilePath := IDFPath.(string)
+	inputepwFilePath := EPWPath.(string)
 
 	cmd := exec.Command(energyPlusExec, "-d", outputDirectory, "-w", inputepwFilePath, "-r", inputidfFilePath)
 
 	// 启动 EnergyPlus 进程
 	if err := cmd.Start(); err != nil {
-		fmt.Println("Error starting EnergyPlus:", err)
+		log.Println("Error starting EnergyPlus:", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
@@ -72,13 +72,13 @@ func CalculateMid(c *gin.Context) {
 	func() {
 		// 等待 EnergyPlus 进程完成
 		if err := cmd.Wait(); err != nil {
-			fmt.Println("Error waiting for EnergyPlus:", err)
+			log.Println("Error waiting for EnergyPlus:", err)
 			return
 		}
 
 		msg := "output successful"
 		if err := wsConn.WriteMessage(websocket.TextMessage, []byte(msg)); err != nil {
-			fmt.Println("Error sending message:", err)
+			log.Println("Error sending message:", err)
 			return
 		}
 		c.Set("outputDirectory", outputDirectory)
