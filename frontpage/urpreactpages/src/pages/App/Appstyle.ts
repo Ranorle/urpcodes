@@ -5,14 +5,22 @@ const drawerWidth = 240;
 export const AppuseStyles = makeStyles((theme: Theme) =>
     createStyles({
         root2: {
+            backgroundColor:"white",
             display: 'flex',
         },
+        DrawerText:{
+           color: "black",
+            textDecoration:"none"
+        },
         appBar: {
+            backgroundColor:"#409eff",
+            color:"white",
             zIndex: theme.zIndex.drawer + 1,
             transition: theme.transitions.create(['width', 'margin'], {
                 easing: theme.transitions.easing.sharp,
                 duration: theme.transitions.duration.leavingScreen,
             }),
+            boxShadow:'0 2px 4px rgba(0, 0, 0, 0.2)',
         },
         drawer: {
             width: drawerWidth,
@@ -34,7 +42,7 @@ export const AppuseStyles = makeStyles((theme: Theme) =>
             overflowX: 'hidden',
             width: theme.spacing(7) + 1,
             [theme.breakpoints.up('sm')]: {
-                width: theme.spacing(9) + 1,
+                width: theme.spacing(8),
             },
         },
         toolbar: {
@@ -46,6 +54,9 @@ export const AppuseStyles = makeStyles((theme: Theme) =>
             ...theme.mixins.toolbar,
         },
         content: {
+            overflowY:"auto",
+            height:"100vh",
+            backgroundColor:"white",
             flexGrow: 1,
             padding: theme.spacing(3),
         },

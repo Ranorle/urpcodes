@@ -1,17 +1,13 @@
 // CounterStore.ts
-import { observable, action } from 'mobx';
+import IdfStore from "./IdfStore";
 
-class Store {
-    @observable count = 0;
+class Stores {
+    idfStore: IdfStore; // 声明 idfStore 的类型
 
-    @action increment() {
-        this.count += 1;
-    }
-
-    @action decrement() {
-        this.count -= 1;
+    constructor() {
+        this.idfStore = new IdfStore(); // 创建 idfStore 实例
     }
 }
 
-const Stores = new Store();
-export default Stores;
+const RootStore = new Stores();
+export default RootStore;
