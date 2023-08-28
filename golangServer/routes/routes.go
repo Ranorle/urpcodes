@@ -20,6 +20,7 @@ func SetupRoutes(server *gin.Engine) {
 	{
 		apiGroup.GET("/calculate", middlewares.WebsocketMid, middlewares.InputparamsMid, middlewares.CalculateMid, middlewares.HandleDataMid)
 		apiGroup.GET("/selectScene", SelectSceneHandler)
+		apiGroup.GET("/selectWeather", SelectSceneHandler)
 	}
 }
 

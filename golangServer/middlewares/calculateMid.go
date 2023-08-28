@@ -5,6 +5,7 @@ package middlewares
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	"golangServer/mysql"
 	"log"
 	"net/http"
 	"os"
@@ -43,11 +44,22 @@ func CalculateMid(c *gin.Context) {
 		return
 	}
 
+	table, err := mysql.QueryAllDataFromBaseTable("baseinfo")
+	if err != nil {
+		// 处理错误，可以发送适当的错误响应给客户端
+		c.JSON(500, gin.H{
+			"error": "Internal Server Error",
+		})
+		return
+	}
+
 	// 输出文件路径
 	currentTime := time.Now()
 	outputFolderName := currentTime.Format("20060102150405")
 
-	outputDirectory := `E:\EnergyPlus\output\` + outputFolderName
+	energyPlusExec := table[0].EnergyPlusExec
+
+	outputDirectory := table[0].OutputDirectory + outputFolderName
 
 	err1 := os.MkdirAll(outputDirectory, os.ModePerm)
 	if err1 != nil {
@@ -56,7 +68,6 @@ func CalculateMid(c *gin.Context) {
 		return
 	}
 
-	energyPlusExec := `E:\EnergyPlus\energyplus.exe`
 	inputidfFilePath := IDFPath.(string)
 	inputepwFilePath := EPWPath.(string)
 
