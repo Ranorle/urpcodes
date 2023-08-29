@@ -19,8 +19,8 @@ func SetupRoutes(server *gin.Engine) {
 	apiGroup := server.Group("/api")
 	{
 		apiGroup.GET("/calculate", middlewares.WebsocketMid, middlewares.InputparamsMid, middlewares.CalculateMid, middlewares.HandleDataMid)
-		apiGroup.GET("/selectScene", SelectSceneHandler)
-		apiGroup.GET("/selectWeather", SelectSceneHandler)
+		apiGroup.GET("/selectScene", middlewares.SelectSceneHandler)
+		apiGroup.GET("/selectWeather", middlewares.SelectWeatherHandler)
 	}
 }
 

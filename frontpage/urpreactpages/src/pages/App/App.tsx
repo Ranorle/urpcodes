@@ -44,7 +44,10 @@ const Layout:React.FC =()=>{
         >
           <Toolbar>
             <Typography variant="h6" noWrap>
-                {location.pathname === '/' ? 'Home' : location.pathname.substring(1)}{/* 移除前导斜杠 */}
+                {location.pathname === '/' && '首页/Home'}
+                {location.pathname === '/calculate' && '计算界面/calculate'}
+                {location.pathname === '/charts' && '图表分析/charts'}
+
             </Typography>
           </Toolbar>
         </AppBar>
@@ -74,7 +77,7 @@ const Layout:React.FC =()=>{
                   <ListItemIcon><ComputerIcon /></ListItemIcon>
                   <ListItemText  primary="计算界面" />
                 </ListItem>
-              <ListItem className={classes.DrawerText} button onClick={()=>{navigate('/Equalizer');}}>
+              <ListItem className={classes.DrawerText} button onClick={()=>{navigate('/charts');}}>
                   <ListItemIcon><EqualizerIcon/></ListItemIcon>
                   <ListItemText  primary="图表分析" />
               </ListItem>
@@ -96,7 +99,11 @@ const router=createBrowserRouter([
       {
         path:"/calculate",
         element:<Calculate/>
-      }
+      },
+        {
+            path:"/charts",
+            element:<div>charts</div>
+        },
     ]
   },
 ])

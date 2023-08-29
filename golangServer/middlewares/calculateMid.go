@@ -13,6 +13,12 @@ import (
 	"time"
 )
 
+type BaseInfoType struct {
+	Id              int
+	EnergyPlusExec  string
+	OutputDirectory string
+}
+
 func CalculateMid(c *gin.Context) {
 	// 从上下文中获取 WebSocket 连接对象
 	conn, exists := c.Get("websocket_conn")
@@ -44,7 +50,9 @@ func CalculateMid(c *gin.Context) {
 		return
 	}
 
-	table, err := mysql.QueryAllDataFromBaseTable("baseinfo")
+	var baseinfo []BaseInfoType
+
+	err := mysql.QueryAllData("baseinfo", &baseinfo)
 	if err != nil {
 		// 处理错误，可以发送适当的错误响应给客户端
 		c.JSON(500, gin.H{
@@ -57,9 +65,9 @@ func CalculateMid(c *gin.Context) {
 	currentTime := time.Now()
 	outputFolderName := currentTime.Format("20060102150405")
 
-	energyPlusExec := table[0].EnergyPlusExec
+	energyPlusExec := baseinfo[0].EnergyPlusExec
 
-	outputDirectory := table[0].OutputDirectory + outputFolderName
+	outputDirectory := baseinfo[0].OutputDirectory + outputFolderName
 
 	err1 := os.MkdirAll(outputDirectory, os.ModePerm)
 	if err1 != nil {

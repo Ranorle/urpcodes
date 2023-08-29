@@ -3,9 +3,9 @@ import Stepper from '@material-ui/core/Stepper';
 import Step from '@material-ui/core/Step';
 import StepLabel from '@material-ui/core/StepLabel';
 import Button from '@material-ui/core/Button';
-import Typography from '@material-ui/core/Typography';
 import {useCalculateStyles} from './calculatestyle'
 import IdfSelector from "../../components/idfselector";
+import EpwSelector from "../../components/epwselector";
 
 function getSteps() {
     return ['选择场景','选择天气', '设置参数'];
@@ -16,7 +16,7 @@ function getStepContent(stepIndex: number) {
         case 0:
             return <IdfSelector/>;
         case 1:
-            return '选择天气';
+            return <EpwSelector/>;
         case 2:
             return '设置参数';
         default:

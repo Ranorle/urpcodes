@@ -1,14 +1,21 @@
-package routes
+package middlewares
 
 import (
 	"github.com/gin-gonic/gin"
 	"golangServer/mysql"
-	"log"
 )
+
+type IdfTableType struct {
+	Id      int
+	IdfName string
+	IdfPath string
+	// 继续为表中的每个字段添加相应的字段类型
+}
 
 func SelectSceneHandler(c *gin.Context) {
 	// 查询数据
-	table, err := mysql.QueryAllDataFromTable("idftable")
+	var idfdata []IdfTableType
+	err := mysql.QueryAllData("idftable", &idfdata)
 	if err != nil {
 		// 处理错误，可以发送适当的错误响应给客户端
 		c.JSON(500, gin.H{
@@ -16,7 +23,6 @@ func SelectSceneHandler(c *gin.Context) {
 		})
 		return
 	}
-	log.Println(table[0])
 	// 成功时，将数据发送给客户端
-	c.JSON(200, table)
+	c.JSON(200, idfdata)
 }
