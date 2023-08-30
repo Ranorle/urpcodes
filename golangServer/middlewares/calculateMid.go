@@ -3,21 +3,17 @@
 package middlewares
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"golangServer/mysql"
+	"golangServer/types"
 	"log"
 	"net/http"
 	"os"
 	"os/exec"
 	"time"
 )
-
-type BaseInfoType struct {
-	Id              int
-	EnergyPlusExec  string
-	OutputDirectory string
-}
 
 func CalculateMid(c *gin.Context) {
 	// 从上下文中获取 WebSocket 连接对象
@@ -50,7 +46,7 @@ func CalculateMid(c *gin.Context) {
 		return
 	}
 
-	var baseinfo []BaseInfoType
+	var baseinfo []types.BaseInfoType
 
 	err := mysql.QueryAllData("baseinfo", &baseinfo)
 	if err != nil {
@@ -79,21 +75,8 @@ func CalculateMid(c *gin.Context) {
 	inputidfFilePath := IDFPath.(string)
 	inputepwFilePath := EPWPath.(string)
 
-	cmd := exec.Command(energyPlusExec, "-d", outputDirectory, "-w", inputepwFilePath, "-r", inputidfFilePath)
-
-	// 启动 EnergyPlus 进程
-	if err := cmd.Start(); err != nil {
-		log.Println("Error starting EnergyPlus:", err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
-
 	func() {
-		// 等待 EnergyPlus 进程完成
-		if err := cmd.Wait(); err != nil {
-			log.Println("Error waiting for EnergyPlus:", err)
-			return
-		}
+		calculateFunc(c, wsConn, energyPlusExec, outputDirectory, inputepwFilePath, inputidfFilePath)
 
 		msg := "output successful"
 		if err := wsConn.WriteMessage(websocket.TextMessage, []byte(msg)); err != nil {
@@ -106,4 +89,30 @@ func CalculateMid(c *gin.Context) {
 		c.Next()
 	}()
 
+}
+
+func calculateFunc(c *gin.Context, wsConn *websocket.Conn, energyPlusExec string, outputDirectory string, inputepwFilePath string, inputidfFilePath string) {
+	// 构建R脚本，使用传递的参数
+	rScript := fmt.Sprintf(`
+	library(eplusr)
+	use_eplus("%s")
+	path_idf <- "%s"
+	path_epw <- "%s"
+	model <- read_idf(path_idf)
+	job <- model$run(path_epw, dir = "%s" , wait = TRUE)
+	job
+	`, energyPlusExec, inputidfFilePath, inputepwFilePath, outputDirectory)
+
+	// 创建一个带有R脚本的临时文件
+	cmd := exec.Command("Rscript", "-e", rScript)
+
+	// 执行R脚本
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		if err1 := wsConn.WriteMessage(websocket.TextMessage, output); err1 != nil {
+			log.Println("Error sending message:", err1)
+			return
+		}
+		c.Abort()
+	}
 }

@@ -1,12 +1,13 @@
 library(eplusr)
 
-use_eplus("E:/EnergyPlus")
+use_eplus("/Applications/EnergyPlus-9-6-0")
 
-path <- "E:/EnergyPlus/inputidf/1ZoneDataCenterCRAC_wApproachTemp2.idf"
+path <- "/Users/dengshengyuan/Desktop/EnergyPlusInput/idfinput/1ZoneDataCenterCRAC_wApproachTemp.idf"
 
 model <- read_idf(path)
 
-
-model$set(.("Jan") := .(..2 = 7))
+model$del("Mar")
 
 model$objects(c("Jan"))
+
+model$save(overwrite = TRUE)

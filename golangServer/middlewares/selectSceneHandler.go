@@ -3,18 +3,12 @@ package middlewares
 import (
 	"github.com/gin-gonic/gin"
 	"golangServer/mysql"
+	"golangServer/types"
 )
-
-type IdfTableType struct {
-	Id      int
-	IdfName string
-	IdfPath string
-	// 继续为表中的每个字段添加相应的字段类型
-}
 
 func SelectSceneHandler(c *gin.Context) {
 	// 查询数据
-	var idfdata []IdfTableType
+	var idfdata []types.IdfTableType
 	err := mysql.QueryAllData("idftable", &idfdata)
 	if err != nil {
 		// 处理错误，可以发送适当的错误响应给客户端

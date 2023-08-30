@@ -3,18 +3,12 @@ package middlewares
 import (
 	"github.com/gin-gonic/gin"
 	"golangServer/mysql"
+	"golangServer/types"
 )
-
-type EpwTableType struct {
-	Id      int
-	EpwName string
-	EpwPath string
-	// 继续为表中的每个字段添加相应的字段类型
-}
 
 func SelectWeatherHandler(c *gin.Context) {
 	// 查询数据
-	var epwdata []EpwTableType
+	var epwdata []types.EpwTableType
 	err := mysql.QueryAllData("epwtable", &epwdata)
 	if err != nil {
 		// 处理错误，可以发送适当的错误响应给客户端

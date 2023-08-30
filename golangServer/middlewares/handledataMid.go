@@ -7,15 +7,27 @@ import (
 	"golangServer/mysql"
 	"log"
 	"net/http"
+	"path/filepath"
+	"strings"
 )
 
 func HandleDataMid(c *gin.Context) {
+
 	conn, exists := c.Get("websocket_conn")
 	if !exists {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "WebSocket connection not found"})
 		c.Abort()
 		return
 	}
+
+	IDFPath, exists := c.Get("IDFPath")
+	if !exists {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "IDFName not found"})
+		c.Abort()
+		return
+	}
+	IDFName := filepath.Base(IDFPath.(string))
+	IDFName = strings.TrimSuffix(IDFName, filepath.Ext(IDFName))
 
 	// 断言连接对象的类型为 *websocket.Conn
 	// 断言连接对象的类型为 *websocket.Conn
@@ -38,7 +50,6 @@ func HandleDataMid(c *gin.Context) {
 		c.Abort()
 		return
 	}
-
 	outputFolderName, exists := c.Get("outputFolderName")
 	if !exists {
 		// 使用 WebSocket 发送错误消息
@@ -64,7 +75,7 @@ func HandleDataMid(c *gin.Context) {
 		return
 	}
 
-	records, err := csvhandler.ReadCSVFile(outputDirStr + "/eplusout.csv")
+	records, err := csvhandler.ReadCSVFile(outputDirStr + "/" + IDFName + ".csv")
 	if err != nil {
 		// 使用 WebSocket 发送错误消息
 		errMsg := "读取输出文件错误：" + err.Error()
@@ -116,11 +127,6 @@ func HandleDataMid(c *gin.Context) {
 		log.Println("Error sending WebSocket success message:", err)
 	}
 
-	defer func(wsConn *websocket.Conn) {
-		err := wsConn.Close()
-		if err != nil {
-
-		}
-	}(wsConn)
+	defer c.Abort()
 
 }
