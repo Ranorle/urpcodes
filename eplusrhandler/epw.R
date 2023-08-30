@@ -1,8 +1,8 @@
 library(eplusr)
 
-use_eplus("/Applications/EnergyPlus-9-6-0")
+use_eplus("E:/EnergyPlus")
 
-path <- "/Users/dengshengyuan/Desktop/EnergyPlusInput/epwinput/CHN_Beijing.Beijing.545110_CSWD.epw"
+path <- "E:/EnergyPlus/inputweather/USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw"
 
 epw <- read_epw(path)
 

@@ -103,16 +103,36 @@ func calculateFunc(c *gin.Context, wsConn *websocket.Conn, energyPlusExec string
 	job
 	`, energyPlusExec, inputidfFilePath, inputepwFilePath, outputDirectory)
 
-	// 创建一个带有R脚本的临时文件
-	cmd := exec.Command("Rscript", "-e", rScript)
-
-	// 执行R脚本
-	output, err := cmd.CombinedOutput()
+	// 将rScript写入到文件
+	rScriptFilePath := "../eplusrhandler/main.R"
+	err := os.WriteFile(rScriptFilePath, []byte(rScript), 0644)
 	if err != nil {
-		if err1 := wsConn.WriteMessage(websocket.TextMessage, output); err1 != nil {
+		log.Println("Error writing R script to file:", err)
+		err1 := wsConn.WriteMessage(websocket.TextMessage, []byte(err.Error()))
+		if err1 != nil {
 			log.Println("Error sending message:", err1)
-			return
 		}
 		c.Abort()
+		return
+	}
+
+	// 创建一个带有R脚本的临时文件
+	cmd := exec.Command("Rscript", rScriptFilePath)
+	// 执行R脚本
+	output, err := cmd.Output()
+	if err != nil {
+		log.Println(string(output))
+		err1 := wsConn.WriteMessage(websocket.TextMessage, []byte(err.Error()))
+		if err1 != nil {
+			log.Println("Error sending message:", err1)
+		}
+		c.Abort()
+	} else {
+		err1 := wsConn.WriteMessage(websocket.TextMessage, output)
+		if err1 != nil {
+			log.Println("Error sending message:", err1)
+		}
+		log.Println(string(output))
+		log.Println("修改IDF文件成功")
 	}
 }
