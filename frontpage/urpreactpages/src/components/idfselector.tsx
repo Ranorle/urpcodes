@@ -9,6 +9,7 @@ import RootStore from '../store/store'
 import axios from "axios";
 import httpInfo from "../http/httpinfo";
 import {toJS} from "mobx";
+import Idfpreviewer from "./idfpreviewer";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -57,7 +58,7 @@ const IdfSelector=observer(()=>{
         })
     }
 
-    console.log(toJS(idfStore.idfObject))
+    // console.log(toJS(idfStore.idfObject))
     return (
         <div className={classes.sceneSelectorDiv}>
             <FormControl className={classes.formControl}>
@@ -70,7 +71,8 @@ const IdfSelector=observer(()=>{
                 >
                     {MenuItems()}
                 </Select>
-            </FormControl>
+            </FormControl >
+            <Idfpreviewer idfname={idfStore.idfObject.IdfName}/>
         </div>
     );
 })

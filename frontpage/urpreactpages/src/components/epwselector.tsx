@@ -8,7 +8,8 @@ import { observer } from "mobx-react-lite";
 import RootStore from '../store/store'
 import axios from "axios";
 import httpInfo from "../http/httpinfo";
-import {toJS} from "mobx";
+// import {toJS} from "mobx";
+import { Map, APILoader, ScaleControl, ToolBarControl,Marker  } from '@uiw/react-amap';
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -38,7 +39,6 @@ const EpwSelector=observer(()=>{
             try{
                 axios.get(httpInfo+'/selectWeather').then((e)=>{
                     epwStore.changeepwArray(e.data)
-                    console.log(e.data)
                 })
             }catch (err){
                 console.log(err)
@@ -58,7 +58,8 @@ const EpwSelector=observer(()=>{
         })
     }
 
-    console.log(toJS(epwStore.epwObject))
+    // console.log(toJS(epwStore.epwObject))
+    // @ts-ignore
     return (
         <div className={classes.sceneSelectorDiv}>
             <FormControl className={classes.formControl}>
@@ -72,7 +73,25 @@ const EpwSelector=observer(()=>{
                     {MenuItems()}
                 </Select>
             </FormControl>
+            <APILoader akey="7e24327564801cafa1077cf3f420bddf">
+            <Map style={{ height: 500 ,width:500}}>
+                <>
+                <ScaleControl offset={[16, 30]} position="LB" />
+                <ToolBarControl offset={[16, 10]} position="RB" />
+                    <Marker
+                        icon={new window.AMap.Icon({
+                            imageSize: new window.AMap.Size(25, 34),
+                            image: '//a.amap.com/jsapi_demos/static/demo-center/icons/poi-marker-2.png'
+                        })}
+                        offset={new window.AMap.Pixel(-13, -30)}
+                        position={[116.368904, 39.913423]}
+                    />
+                </>
+            </Map>
+            </APILoader>
         </div>
+
+
     );
 })
 export default EpwSelector

@@ -20,9 +20,10 @@ type IdfTableType struct {
 //EPW数据库类型
 
 type EpwTableType struct {
-	Id      int
-	EpwName string
-	EpwPath string
+	Id       int
+	EpwName  string
+	EpwPath  string
+	Location string
 	// 继续为表中的每个字段添加相应的字段类型
 }
 

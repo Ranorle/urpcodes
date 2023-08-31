@@ -5,6 +5,7 @@ export type idfObjectType={
     Id:number,
     EpwName:string,
     EpwPath:string,
+    Location:string,
 }
 
 class EpwStore {
@@ -14,14 +15,16 @@ class EpwStore {
 
     //states
     epwObject: idfObjectType={
-        Id:1,
+        Id:0,
         EpwName:'',
         EpwPath:'',
+        Location:'',
     }
     epwArray:idfObjectType[]=[{
-        Id:1,
+        Id:0,
         EpwName:'',
         EpwPath:'',
+        Location:'',
     }]
     //actions
     changeepwObject(value: idfObjectType) {

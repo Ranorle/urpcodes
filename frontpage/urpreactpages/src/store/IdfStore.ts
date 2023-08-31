@@ -14,12 +14,12 @@ class IdfStore {
 
     //states
     idfObject: idfObjectType={
-        Id:1,
+        Id:0,
         IdfName:'',
         IdfPath:'',
     }
     idfArray:idfObjectType[]=[{
-        Id:1,
+        Id:0,
         IdfName:'',
         IdfPath:'',
     }]

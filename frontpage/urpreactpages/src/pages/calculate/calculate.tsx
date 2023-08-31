@@ -6,6 +6,8 @@ import Button from '@material-ui/core/Button';
 import {useCalculateStyles} from './calculatestyle'
 import IdfSelector from "../../components/idfselector";
 import EpwSelector from "../../components/epwselector";
+import RootStore from "../../store/store";
+import { observer } from "mobx-react-lite";
 
 function getSteps() {
     return ['选择场景','选择天气', '设置参数'];
@@ -24,11 +26,13 @@ function getStepContent(stepIndex: number) {
     }
 }
 
-export default function Calculate() {
+const Calculate=observer(()=> {
     const classes = useCalculateStyles();
     const [activeStep, setActiveStep] = React.useState<number>(0);
     const steps = getSteps();
+    const next=((activeStep===0 && RootStore.idfStore.idfObject.Id ===0)||(activeStep===1 && RootStore.epwStore.epwObject.Id ===0))
 
+    // console.log(next)
     const handleNext = () => {
         setActiveStep((prevActiveStep) => prevActiveStep + 1);
     };
@@ -65,10 +69,10 @@ export default function Calculate() {
                                 onClick={handleBack}
                                 className={classes.backButton}
                             >
-                                Back
+                                返回
                             </Button>
-                            <Button variant="contained" color="primary" onClick={handleNext} className={classes.nextButton}>
-                                {activeStep === steps.length - 1 ? 'Finish' : 'Next'}
+                            <Button variant="contained" disabled={next} color="primary" onClick={handleNext} className={classes.nextButton}>
+                                {activeStep === steps.length - 1 ? '开始计算' : '下一个'}
                             </Button>
                         </div>
                     </div>
@@ -76,4 +80,6 @@ export default function Calculate() {
             </div>
         </div>
     );
-}
+})
+
+export default Calculate
