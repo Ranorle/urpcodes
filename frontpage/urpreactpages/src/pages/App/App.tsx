@@ -45,7 +45,7 @@ const Layout:React.FC =()=>{
           <Toolbar>
             <Typography variant="h6" noWrap>
                 {location.pathname === '/' && '首页/Home'}
-                {location.pathname === '/calculate' && '计算界面/calculate'}
+                {location.pathname === '/singleCalculate' && '单建筑计算界面/singleCalculate'}
                 {location.pathname === '/charts' && '图表分析/charts'}
 
             </Typography>
@@ -73,9 +73,9 @@ const Layout:React.FC =()=>{
                           <ListItemIcon><HomeIcon /></ListItemIcon>
                       <ListItemText  primary="首页" />
                   </ListItem>
-                <ListItem className={classes.DrawerText} button onClick={()=>{navigate('/calculate');}}>
+                <ListItem className={classes.DrawerText} button onClick={()=>{navigate('/singleCalculate');}}>
                   <ListItemIcon><ComputerIcon /></ListItemIcon>
-                  <ListItemText  primary="计算界面" />
+                  <ListItemText  primary="单建筑计算界面" />
                 </ListItem>
               <ListItem className={classes.DrawerText} button onClick={()=>{navigate('/charts');}}>
                   <ListItemIcon><EqualizerIcon/></ListItemIcon>
@@ -97,7 +97,7 @@ const router=createBrowserRouter([
     element:<Layout/>,
     children:[
       {
-        path:"/calculate",
+        path:"/singleCalculate",
         element:<Calculate/>
       },
         {

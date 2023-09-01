@@ -18,7 +18,7 @@ class EpwStore {
         Id:0,
         EpwName:'',
         EpwPath:'',
-        Location:'',
+        Location:'116.47,39.80',
     }
     epwArray:idfObjectType[]=[{
         Id:0,

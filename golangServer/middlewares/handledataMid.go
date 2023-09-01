@@ -30,7 +30,6 @@ func HandleDataMid(c *gin.Context) {
 	IDFName = strings.TrimSuffix(IDFName, filepath.Ext(IDFName))
 
 	// 断言连接对象的类型为 *websocket.Conn
-	// 断言连接对象的类型为 *websocket.Conn
 	wsConn, ok := conn.(*websocket.Conn)
 	if !ok {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid WebSocket connection"})

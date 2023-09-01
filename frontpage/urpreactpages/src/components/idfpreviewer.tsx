@@ -71,7 +71,7 @@ const Idfpreviewer:React.FC<ChildComponentProps>=(props)=>{
 
     return<div>
         {props.idfname &&<div className={classes.previewroot}>
-            <div><div className={classes.title}>场景模型预览:</div>
+            <div><div className={classes.title}>场景模型预览</div>
             <Card className={classes.previewcard}>
              <CardMedia
                 className={classes.media}

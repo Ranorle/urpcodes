@@ -1,3 +1,4 @@
+import { Map, APILoader, ScaleControl, ToolBarControl,Marker  } from '@uiw/react-amap';
 import React, {useEffect} from 'react';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import InputLabel from '@material-ui/core/InputLabel';
@@ -8,8 +9,7 @@ import { observer } from "mobx-react-lite";
 import RootStore from '../store/store'
 import axios from "axios";
 import httpInfo from "../http/httpinfo";
-// import {toJS} from "mobx";
-import { Map, APILoader, ScaleControl, ToolBarControl,Marker  } from '@uiw/react-amap';
+import {toJS} from "mobx";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -26,6 +26,19 @@ const useStyles = makeStyles((theme: Theme) =>
             flexDirection:"column",
             justifyContent:"center",
             alignItems:"center"
+        },
+        title:{
+            textAlign:"left",
+            fontSize:25,
+            fontWeight:500,
+            marginBottom:10,
+        },
+        epwroot:{
+            display:"flex",
+            flexDirection:"column",
+            justifyContent:"center",
+            alignItems:"left",
+            marginBottom:30,
         },
     }),
 );
@@ -58,7 +71,7 @@ const EpwSelector=observer(()=>{
         })
     }
 
-    // console.log(toJS(epwStore.epwObject))
+    // console.log(RootStore.epwStore.epwObject.Location)
     // @ts-ignore
     return (
         <div className={classes.sceneSelectorDiv}>
@@ -73,22 +86,18 @@ const EpwSelector=observer(()=>{
                     {MenuItems()}
                 </Select>
             </FormControl>
-            <APILoader akey="7e24327564801cafa1077cf3f420bddf">
-            <Map style={{ height: 500 ,width:500}}>
+
+            {RootStore.epwStore.epwObject.Id!==0 &&<div className={classes.epwroot}>
+                <div className={classes.title}>地图地点预览</div>
+                <Map zoom={4} center={epwStore.epwObject.Location.split(',')} style={{height: 500, width: 500}}>
                 <>
-                <ScaleControl offset={[16, 30]} position="LB" />
-                <ToolBarControl offset={[16, 10]} position="RB" />
+                    <ScaleControl offset={[16, 30]} position="LB"/>
+                    <ToolBarControl offset={[16, 10]} position="RB"/>
                     <Marker
-                        icon={new window.AMap.Icon({
-                            imageSize: new window.AMap.Size(25, 34),
-                            image: '//a.amap.com/jsapi_demos/static/demo-center/icons/poi-marker-2.png'
-                        })}
-                        offset={new window.AMap.Pixel(-13, -30)}
-                        position={[116.368904, 39.913423]}
+                        position={epwStore.epwObject.Location.split(',')}
                     />
                 </>
-            </Map>
-            </APILoader>
+            </Map></div>}
         </div>
 
 

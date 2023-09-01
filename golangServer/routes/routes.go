@@ -5,6 +5,7 @@ import (
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"golangServer/middlewares"
+	"golangServer/middlewares/epwinfo"
 )
 
 func SetupRoutes(server *gin.Engine) {
@@ -20,13 +21,20 @@ func SetupRoutes(server *gin.Engine) {
 	server.Use(static.Serve("/", static.LocalFile("./build", false)))
 	server.Use(static.Serve("/idfpreview", static.LocalFile("../eplusrhandler/assests", true)))
 
-	// 使用 Group 包裹路由
 	apiGroup := server.Group("/api")
 	{
+		//实行总计算api
 		apiGroup.GET("/calculate", middlewares.WebsocketMid, middlewares.InputparamsMid, middlewares.CalculateMid, middlewares.HandleDataMid)
+		//获取idf信息api
 		apiGroup.GET("/selectScene", middlewares.SelectSceneHandler)
+		//获取气象信息api
 		apiGroup.GET("/selectWeather", middlewares.SelectWeatherHandler)
+		//预览idf3d模型api
 		apiGroup.POST("/windowpreview", middlewares.OpenPreview)
+		//TODO idf信息计算与设置
+
+		//TODO epw信息计算与设置
+		apiGroup.POST("/setepwinfo", epwinfo.SetEpwInfo)
 	}
 }
 
