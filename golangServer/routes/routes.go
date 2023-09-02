@@ -31,6 +31,8 @@ func SetupRoutes(server *gin.Engine) {
 		apiGroup.GET("/selectWeather", middlewares.SelectWeatherHandler)
 		//预览idf3d模型api
 		apiGroup.POST("/windowpreview", middlewares.OpenPreview)
+		//预览气象信息
+		apiGroup.POST("/getpreviewinfo", epwinfo.SelectWeatherPreviewHandler)
 		//TODO idf信息计算与设置
 
 		//TODO epw信息计算与设置

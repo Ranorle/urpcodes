@@ -3,7 +3,7 @@ import {createStyles, makeStyles, Theme} from "@material-ui/core/styles";
 export const useCalculateStyles = makeStyles((theme: Theme) =>
     createStyles({
         CalculateRoot: {
-            width: '100%'
+            width: '100%',
         },
         backButton: {
             marginRight: theme.spacing(1),

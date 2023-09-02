@@ -48,7 +48,6 @@ const IdfSelector=observer(()=>{
     },[])
 
     const handleChange = (event: React.ChangeEvent<{ value:unknown }>) => {
-
             idfStore.changeidfObject(idfStore.idfArray[Number(event.target.value)-1])
     };
 

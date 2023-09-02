@@ -20,7 +20,7 @@ type EpwData struct {
 
 func SetEpwInfo(c *gin.Context) {
 	var requestData []EpwData // 使用切片来表示数组元素
-	infotype := [6]string{"location", "dry_bulb_temperature", "dew_point_temperature", "relative_humidity", "atmospheric_pressure", "wind_speed"}
+	infotype := [7]string{"location", "dry_bulb_temperature", "dew_point_temperature", "relative_humidity", "atmospheric_pressure", "wind_speed", "wind_direction"}
 
 	// 尝试将请求体绑定到 requestData 切片
 	if err := c.ShouldBindJSON(&requestData); err != nil {

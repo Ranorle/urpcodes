@@ -9,8 +9,9 @@ import EpwSelector from "../../components/epwselector";
 import RootStore from "../../store/store";
 import { observer } from "mobx-react-lite";
 
+
 function getSteps() {
-    return ['选择场景','选择天气', '设置参数'];
+    return ['选择场景','选择气象数据', '设置参数'];
 }
 
 function getStepContent(stepIndex: number) {
