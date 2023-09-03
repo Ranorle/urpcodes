@@ -114,6 +114,7 @@ function App() {
             primary: {
                 main: '#3a8ee6', // 设置主要颜色为浅蓝色
             },
+
         },
     });
     return (

@@ -1,17 +1,15 @@
-import { Map, ScaleControl, ToolBarControl,Marker  } from '@uiw/react-amap';
-import React, {useEffect} from 'react';
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
+import {Map, Marker, ScaleControl, ToolBarControl} from '@uiw/react-amap';
+import React, {useEffect, useState} from 'react';
+import {createStyles, makeStyles, Theme} from '@material-ui/core/styles';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
-import { observer } from "mobx-react-lite";
+import {observer} from "mobx-react-lite";
 import RootStore from '../store/store'
 import axios from "axios";
 import httpInfo from "../http/httpinfo";
 import * as echarts from 'echarts';
-import {toJS} from "mobx";
-import dayjs from 'dayjs';
 
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -20,6 +18,7 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
+import {data} from "browserslist";
 
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -56,16 +55,15 @@ const useStyles = makeStyles((theme: Theme) =>
             flexDirection:"row",
             justifyContent:"center",
             alignItems:"center",
-            gap:70,
+            gap:60,
         },alldiv:{
-            marginTop:30,
             display:"flex",
             flexDirection:"column",
             justifyContent:"center",
             alignItems:"center",
-            gap:40,
+            gap:30,
         },ganluChart:{
-            width:750,
+            width:650,
             height:400,
             borderRadius:10,
             paddingTop:30,
@@ -84,28 +82,34 @@ const useStyles = makeStyles((theme: Theme) =>
             justifyContent:"center",
             marginLeft:15,
             marginTop:10,
+        },
+        avaragedifferenceChart:{
+            width:500,
+            height:400,
+            borderRadius:10,
+            boxShadow: "0px 0px 4px rgba(0, 0, 0, 0.2)",
+            '&:hover': {
+                boxShadow: '0px 0px 7px rgba(0, 0, 0, 0.3)',
+            },
         }
     }),
 );
 
 const findMaxAndMinAndAver=(array:number[])=>{
     const maxvalue = Math.max(...array);
-    const maxIndex = array.indexOf(maxvalue);
     const minvalue = Math.min(...array);
-    const minIndex = array.indexOf(minvalue)
-    const startDate = dayjs('2023-01-01'); // 设置你的起始日期
-    const Maxdate=startDate.add(maxIndex, 'hours')
-    const Mindate=startDate.add(minIndex, 'hours')
 
     const sum = array.reduce((acc, currentValue) => acc + currentValue, 0);
     const average = sum / array.length;
 
-    return[maxvalue.toFixed(2),minvalue.toFixed(2),average.toFixed(2),Maxdate.format('MMM D HH:mm'),Mindate.format('MMM D HH:mm')]
+    return[maxvalue.toFixed(2),minvalue.toFixed(2),average.toFixed(2)]
 }
 const EpwSelector=observer(()=>{
     const classes = useStyles();
     const epwStore=RootStore.epwStore
 
+    const [windchartzoom,setwindchartzoom]=useState<number[]>([0,100])
+    console.log(windchartzoom)
     //获取天气基本信息
     const getIdfInfo=async ()=>{
         try{
@@ -138,6 +142,7 @@ const EpwSelector=observer(()=>{
     const relative_humidity= RootStore.epwStore.epwpreviewobject.relative_humidity.split(',').map((str) => parseFloat(str))
     const atmospheric_pressure= RootStore.epwStore.epwpreviewobject.atmospheric_pressure.split(',').map((str) => parseFloat(str))
     const wind_speed= RootStore.epwStore.epwpreviewobject.wind_speed.split(',').map((str) => parseFloat(str))
+    const wind_direction= RootStore.epwStore.epwpreviewobject.wind_direction.split(',').map((str) => parseFloat(str))
 
     const dry=findMaxAndMinAndAver(dry_bulb_temperature)
     const dew=findMaxAndMinAndAver(dew_point_temperature)
@@ -145,8 +150,20 @@ const EpwSelector=observer(()=>{
     const atm=findMaxAndMinAndAver(atmospheric_pressure)
     const win=findMaxAndMinAndAver(wind_speed)
 
-    console.log(dew[4])
 
+
+
+    //风向转换函数
+    function convertWindDirections(degreesArray:number[]) {
+        const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+
+        return degreesArray.map(degrees => {
+            const index = Math.round(degrees / 22.5) % 16;
+            return directions[index];
+        });
+    }
+
+    //数据表格
     const simpleRows=[
         {
             name:"干球温度(°C)",
@@ -179,34 +196,73 @@ const EpwSelector=observer(()=>{
             min:win[1],
         },
     ]
+
+    //每日平均温度
     const convertIntoDay=(data:number[])=>{
         const daysData = [];
         for (let i = 0; i < data.length; i += 24) {
             const daySlice = data.slice(i, i + 24);
             daysData.push(daySlice);
         }
-        const dailyAverages = daysData.map(day => {
+        return daysData.map(day => {
             const sum = day.reduce((acc, value) => acc + value, 0);
             return sum / day.length;
-        });
-        return dailyAverages
+        })
     }
-
+    //每日最大温差
     let base = +new Date(1968, 0, 0);
     let oneDay = 24 * 3600 * 1000;
     let date:string[] = [];
 
     for (let i = 0; i < 365; i++) {
-        var now = new Date((base += oneDay));
+        const now = new Date((base += oneDay));
         date.push([now.getMonth() + 1, now.getDate()].join('月')+'日');
     }
+
+    // const day_windspeed_data=convertIntoDay(wind_speed)
+    // const day_winddirection_data=convertIntoDay(wind_direction)
+
+    const wind_speed_data = wind_speed.map((value, index) => {
+        // 计算时间戳，从2023年1月1日0时开始，每小时递增
+        const timestamp = new Date('2023-01-01').getTime() +  index *  24 * 60 * 60 * 1000;
+
+        return {
+            time: new Date(timestamp).toISOString(), // 将时间转换为字符串
+            windSpeed: value,
+            R: convertWindDirections(wind_direction)[index], // 假设您有一个名为convertWindDirections的函数来获取R值
+        };
+    });
+
+    const calculateAnnualAverageMaxTemperatureDifference = (data:number[]) => {
+        const daysData = [];
+        for (let i = 0; i < data.length; i += 24) {
+            const daySlice = data.slice(i, i + 24);
+            daysData.push(daySlice);
+        }
+
+        const dailyMaxDifferences = daysData.map((day) => {
+            const maxTemp = Math.max(...day);
+            const minTemp = Math.min(...day);
+            return maxTemp - minTemp;
+        });
+
+        return dailyMaxDifferences.reduce((acc, maxDifference) => acc + maxDifference, 0) /
+            dailyMaxDifferences.length;
+    };
+
+
+
+
+const y={
+    "data": wind_speed_data
+}
 
     //干、露温度图表option
     useEffect(()=>{
         // 绘制图表
        if(RootStore.epwStore.epwObject.Id!==0) {
-           const myChart = echarts.init(document.getElementById('ganluChart'));
-           myChart.setOption({
+           const ganluChart = echarts.init(document.getElementById('ganluChart'));
+           ganluChart.setOption({
                tooltip: {
                    trigger: 'axis', // 设置触发 tooltip 的方式，'axis' 表示在坐标轴上触发
                    position: function (pt:string) {
@@ -271,8 +327,322 @@ const EpwSelector=observer(()=>{
                    }
                ],
            });
-       }
-    },[RootStore.epwStore.epwpreviewobject])
+           const avaragedifferenceChart =echarts.init(document.getElementById('avaragedifferenceChart'))
+           avaragedifferenceChart.setOption({
+               series: [
+                   {
+                       type: 'gauge',
+                       center: ['50%', '60%'],
+                       startAngle: 200,
+                       endAngle: -20,
+                       min: 0,
+                       max: 60,
+                       splitNumber: 12,
+                       itemStyle: {
+                           color: '#FFAB91'
+                       },
+                       progress: {
+                           show: true,
+                           width: 30
+                       },
+
+                       pointer: {
+                           show: false
+                       },
+                       axisLine: {
+                           lineStyle: {
+                               width: 30
+                           }
+                       },
+                       axisTick: {
+                           distance: -45,
+                           splitNumber: 5,
+                           lineStyle: {
+                               width: 2,
+                               color: '#999'
+                           }
+                       },
+                       splitLine: {
+                           distance: -52,
+                           length: 14,
+                           lineStyle: {
+                               width: 3,
+                               color: '#999'
+                           }
+                       },
+                       axisLabel: {
+                           distance: -20,
+                           color: '#999',
+                           fontSize: 20
+                       },
+                       anchor: {
+                           show: false
+                       },
+                       title: {
+                           show: false
+                       },
+                       detail: {
+                           valueAnimation: true,
+                           width: '60%',
+                           lineHeight: 40,
+                           borderRadius: 8,
+                           offsetCenter: [0, '-15%'],
+                           fontSize: 60,
+                           fontWeight: 'bolder',
+                           formatter: '{value} °C',
+                           color: 'inherit'
+                       },
+                       data: [
+                           {
+                               value: calculateAnnualAverageMaxTemperatureDifference(dry_bulb_temperature).toFixed(1)
+                           }
+                       ]
+                   },
+
+                   {
+                       type: 'gauge',
+                       center: ['50%', '60%'],
+                       startAngle: 200,
+                       endAngle: -20,
+                       min: 0,
+                       max: 60,
+                       itemStyle: {
+                           color: '#FD7347'
+                       },
+                       progress: {
+                           show: true,
+                           width: 8
+                       },
+
+                       pointer: {
+                           show: false
+                       },
+                       axisLine: {
+                           show: false
+                       },
+                       axisTick: {
+                           show: false
+                       },
+                       splitLine: {
+                           show: false
+                       },
+                       axisLabel: {
+                           show: false
+                       },
+                       detail: {
+                           show: false
+                       },
+                       data: [
+                           {
+                               value: calculateAnnualAverageMaxTemperatureDifference(dry_bulb_temperature).toFixed(2)
+                           }
+                       ]
+                   }
+               ],
+               title: {
+                   text: '平均日最大温差(干球)', // 主标题文本
+                   left: 'center', // 主标题距离左侧的位置，
+                   top: 'bottom', // 主标题位于图表顶部
+                   textStyle: {
+                       // 标题文本样式
+                       fontSize: 20, // 主标题字体大小
+                       fontWeight: 'bold', // 主标题字体粗细
+                       color: '#333', // 主标题颜色
+                   },
+               },
+           })
+           const x=(response: { data: { time: string; windSpeed: number; R: string; }[]; }) => {
+                   const rawData = response
+
+                   const directionMap = {};
+                   // prettier-ignore
+                   [
+                       'W', 'WSW', 'SW', 'SSW', 'S', 'SSE', 'SE', 'ESE', 'E', 'ENE', 'NE', 'NNE',
+                       'N', 'NNW', 'NW', 'WNW'
+                   ].forEach(function (name, index) {
+                       // @ts-ignore
+                       directionMap[name] = (Math.PI / 8) * index;
+                   });
+                    let data
+                  if(rawData.data) data = rawData.data.map(function (entry: { time: any; windSpeed: any; R: any; }) {
+                       return [entry.time, entry.windSpeed, entry.R];
+                   });
+                   const dims = {
+                       time: 0,
+                       windSpeed: 1,
+                       R: 2,
+                       waveHeight: 3,
+                       weatherIcon: 2,
+                       minTemp: 3,
+                       maxTemp: 4,
+                   };
+                   const arrowSize = 18;
+                   const renderArrow = function (param: any, api: { coord: (arg0: any[]) => any; value: (arg0: number) => string | number; style: (arg0: {
+                           fill: string;
+                           stroke: string;
+                           lineWidth: number
+                       }) => any; }) {
+                       const point = api.coord([api.value(dims.time), api.value(dims.windSpeed)]);
+
+                       return {
+                           type: 'path',
+                           shape: {
+                               pathData: 'M31 16l-15-15v9h-26v12h26v9z',
+                               x: -arrowSize / 2,
+                               y: -arrowSize / 2,
+                               width: arrowSize,
+                               height: arrowSize,
+                           },
+                           // @ts-ignore
+                           rotation: directionMap[api.value(dims.R)],
+                           position: point,
+                           style: api.style({
+                               stroke: '#555',
+                               lineWidth: 1,
+                               fill: '#ff0000',
+                           }),
+                       };
+                   };
+
+                   const option = {
+                       title: {
+                           text: '风向、风速数据',
+                           left: 'center',
+                       },
+                       tooltip: {
+                           trigger: 'axis',
+                           formatter: function (params: { value: string[]; }[]) {
+                               return [
+                                   echarts.format.formatTime(
+                                       'yyyy-MM-dd',
+                                       params[0].value[dims.time]
+                                   ) +
+                                   ' ' +
+                                   echarts.format.formatTime('hh:mm', params[0].value[dims.time]),
+                                   '风速：' + params[0].value[dims.windSpeed],
+                                   '风向：' + params[0].value[dims.R],
+                               ].join('<br>');
+                           },
+                       },
+                       xAxis: {
+                           type: 'time',
+                           maxInterval: 3600 * 1000 * 24,
+                           splitLine: {
+                               lineStyle: {
+                                   color: '#ddd',
+                               },
+                           },
+                       },
+                       yAxis: [
+                           {
+                               name: '风速（节）',
+                               nameLocation: 'middle',
+                               nameGap: 35,
+                               axisLine: {
+                                   lineStyle: {
+                                       color: '#666',
+                                   },
+                               },
+                               splitLine: {
+                                   lineStyle: {
+                                       color: '#ddd',
+                                   },
+                               },
+                           },
+                           {
+                               axisLine: { show: false },
+                               axisTick: { show: false },
+                               axisLabel: { show: false },
+                               splitLine: { show: false },
+                           },
+                       ],
+                       visualMap: {
+                           type: 'piecewise',
+                           orient: 'horizontal',
+                           left: 'center',
+                           bottom: 10,
+                           pieces: [
+                               {
+                                   gte: 17,
+                                   color: '#18BF12',
+                                   label: '大风（>=17节）',
+                               },
+                               {
+                                   gte: 11,
+                                   lt: 17,
+                                   color: '#f4e9a3',
+                                   label: '中风（11  ~ 17 节）',
+                               },
+                               {
+                                   lt: 11,
+                                   color: '#D33C3E',
+                                   label: '微风（小于 11 节）',
+                               },
+                           ],
+                           seriesIndex: 1,
+                           dimension: 1,
+                       },
+                       dataZoom: [
+                           {
+                               type: 'inside',
+                               start: 0,
+                               end: 10
+                           },
+                           {
+                               start: 0,
+                               end: 10
+                           }
+                       ],
+                       series: [
+                           {
+                               type: 'custom',
+                               renderItem: renderArrow,
+                               encode: {
+                                   x: dims.time,
+                                   y: dims.windSpeed,
+                               },
+                               data: data,
+                               z: 10,
+                           },
+                           {
+                               type: 'line',
+                               symbol: 'none',
+                               encode: {
+                                   x: dims.time,
+                                   y: dims.windSpeed,
+                               },
+                               lineStyle: {
+                                   color: '#aaa',
+                                   type: 'dotted',
+                               },
+                               data: data,
+                               z: 1,
+                           },
+                       ],
+                   };
+
+                   const myChart = echarts.init(document.getElementById('windSpeedandDirection'));
+                   myChart.setOption(option);
+                 myChart.on('dataZoom', function (params:any) {
+                   // 在这里处理数据范围变化的逻辑
+                     let start=0
+                     let end =100
+                      if(params.batch) {
+                          start = params.batch[0].start
+                          end = params.batch[0].end
+                      }else {
+                          start =params.start
+                          end =params.end
+                      }
+
+                     // console.log(params.batch[0].start )
+                     setwindchartzoom([start,end])
+
+                     // console.log('当前数据范围：', start, end);
+               });
+               }
+               x(y)
+    }},[RootStore.epwStore.epwpreviewobject])
 
     useEffect(()=>{
         getIdfInfo()
@@ -359,7 +729,12 @@ const EpwSelector=observer(()=>{
             </div>
                 <div className={classes.showingdiv}>
                     <div id="ganluChart" className={classes.ganluChart}></div>
+                    <div id="avaragedifferenceChart" className={classes.avaragedifferenceChart}></div>
                 </div>
+                    <div className={classes.showingdiv} style={{marginTop:30}}>
+                        <div id='windSpeedandDirection' className={classes.ganluChart}></div>
+                        <div className={classes.avaragedifferenceChart}></div>
+                    </div>
                 </div>}
         </div>
 

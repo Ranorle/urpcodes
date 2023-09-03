@@ -130,13 +130,14 @@ func QueryWeatherPreviewArray(c *gin.Context, tablename string, epwname string) 
 		RelativeHumidity    string `json:"relative_humidity"`
 		AtmosphericPressure string `json:"atmospheric_pressure"`
 		WindSpeed           string `json:"wind_speed"`
+		WindDirection       string `json:"wind_direction"`
 	}
-	query := fmt.Sprintf("SELECT dry_bulb_temperature,dew_point_temperature,relative_humidity,atmospheric_pressure,wind_speed FROM %s WHERE EpwName = ?", tablename)
+	query := fmt.Sprintf("SELECT dry_bulb_temperature,dew_point_temperature,relative_humidity,atmospheric_pressure,wind_speed,wind_direction FROM %s WHERE EpwName = ?", tablename)
 
 	// 执行查询
 	row := DB.QueryRow(query, epwname)
 	var weatherData WeatherData
-	err := row.Scan(&weatherData.DryBulbTemperature, &weatherData.DewPointTemperature, &weatherData.RelativeHumidity, &weatherData.AtmosphericPressure, &weatherData.WindSpeed)
+	err := row.Scan(&weatherData.DryBulbTemperature, &weatherData.DewPointTemperature, &weatherData.RelativeHumidity, &weatherData.AtmosphericPressure, &weatherData.WindSpeed, &weatherData.WindDirection)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"error": err.Error(),

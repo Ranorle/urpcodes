@@ -5,11 +5,11 @@ const drawerWidth = 240;
 export const AppuseStyles = makeStyles((theme: Theme) =>
     createStyles({
         root2: {
-            backgroundColor:"white",
+            backgroundColor:"#f8f9fa",
             display: 'flex',
         },
         DrawerText:{
-           color: "black",
+            color: "black",
             textDecoration:"none"
         },
         appBar: {
@@ -56,7 +56,7 @@ export const AppuseStyles = makeStyles((theme: Theme) =>
         content: {
             overflowY:"auto",
             height:"100vh",
-            backgroundColor:"white",
+            backgroundColor:"#f8f9fa",
             flexGrow: 1,
             padding: theme.spacing(3),
         },

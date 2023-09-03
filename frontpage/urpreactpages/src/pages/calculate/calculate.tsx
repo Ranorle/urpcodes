@@ -48,7 +48,7 @@ const Calculate=observer(()=> {
 
     return (
         <div className={classes.CalculateRoot}>
-            <Stepper activeStep={activeStep} alternativeLabel>
+            <Stepper activeStep={activeStep} style={{backgroundColor:"#f8f9fa"}} alternativeLabel>
                 {steps.map((label) => (
                     <Step key={label}>
                         <StepLabel >{label}</StepLabel>
