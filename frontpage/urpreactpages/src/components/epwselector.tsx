@@ -108,8 +108,6 @@ const EpwSelector=observer(()=>{
     const classes = useStyles();
     const epwStore=RootStore.epwStore
 
-    const [windchartzoom,setwindchartzoom]=useState<number[]>([0,100])
-    console.log(windchartzoom)
     //获取天气基本信息
     const getIdfInfo=async ()=>{
         try{
@@ -209,6 +207,50 @@ const EpwSelector=observer(()=>{
             return sum / day.length;
         })
     }
+
+    const convertIntoDay_wind = (windSpeedData:number[], windDirectionData:number[]) => {
+        const daysData = [];
+        const hoursPerDay = 24;
+
+        for (let i = 0; i < windSpeedData.length; i += hoursPerDay) {
+            const dayWindSpeedSlice = windSpeedData.slice(i, i + hoursPerDay);
+            const dayWindDirectionSlice = windDirectionData.slice(i, i + hoursPerDay);
+            daysData.push({ windSpeed: dayWindSpeedSlice, windDirection: dayWindDirectionSlice });
+        }
+
+        const calculateWeight = (windSpeed:number) => Math.pow(windSpeed, 2);
+
+        return daysData.map(day => {
+            const weightedSumSpeed = day.windSpeed.reduce((acc, speed, index) => {
+                const weight = calculateWeight(speed);
+                return acc + (speed * weight);
+            }, 0);
+
+            const weightedSumDirectionX = day.windSpeed.reduce((acc, speed, index) => {
+                const weight = calculateWeight(speed);
+                return acc + (speed * Math.cos(day.windDirection[index]) * weight);
+            }, 0);
+
+            const weightedSumDirectionY = day.windSpeed.reduce((acc, speed, index) => {
+                const weight = calculateWeight(speed);
+                return acc + (speed * Math.sin(day.windDirection[index]) * weight);
+            }, 0);
+
+            const totalWeight = day.windSpeed.reduce((acc, speed, index) => {
+                const weight = calculateWeight(speed);
+                return acc + weight;
+            }, 0);
+
+            const weightedAverageSpeed = weightedSumSpeed / totalWeight;
+            const weightedAverageDirection = Math.atan2(weightedSumDirectionY, weightedSumDirectionX);
+
+            // Convert radians to degrees for wind direction
+            const weightedAverageDirectionDegrees = (weightedAverageDirection * 180) / Math.PI;
+
+            return weightedAverageDirectionDegrees;
+        });
+    }
+
     //每日最大温差
     let base = +new Date(1968, 0, 0);
     let oneDay = 24 * 3600 * 1000;
@@ -219,17 +261,17 @@ const EpwSelector=observer(()=>{
         date.push([now.getMonth() + 1, now.getDate()].join('月')+'日');
     }
 
-    // const day_windspeed_data=convertIntoDay(wind_speed)
-    // const day_winddirection_data=convertIntoDay(wind_direction)
+    const day_windspeed_data=convertIntoDay(wind_speed)
+    const day_winddirection_data=convertIntoDay_wind(wind_speed,wind_direction)
 
-    const wind_speed_data = wind_speed.map((value, index) => {
+    const wind_speed_data = day_windspeed_data.map((value, index) => {
         // 计算时间戳，从2023年1月1日0时开始，每小时递增
         const timestamp = new Date('2023-01-01').getTime() +  index *  24 * 60 * 60 * 1000;
 
         return {
             time: new Date(timestamp).toISOString(), // 将时间转换为字符串
             windSpeed: value,
-            R: convertWindDirections(wind_direction)[index], // 假设您有一个名为convertWindDirections的函数来获取R值
+            R: convertWindDirections(day_winddirection_data)[index], // 假设您有一个名为convertWindDirections的函数来获取R值
         };
     });
 
@@ -252,8 +294,10 @@ const EpwSelector=observer(()=>{
 
 
 
+    const averageatm: number = parseFloat(simpleRows[2].average)/1000;
 
-const y={
+
+    const y={
     "data": wind_speed_data
 }
 
@@ -327,6 +371,7 @@ const y={
                    }
                ],
            });
+
            const avaragedifferenceChart =echarts.init(document.getElementById('avaragedifferenceChart'))
            avaragedifferenceChart.setOption({
                series: [
@@ -451,7 +496,8 @@ const y={
                    },
                },
            })
-           const x=(response: { data: { time: string; windSpeed: number; R: string; }[]; }) => {
+           //风速风向图表
+           const fengsuchart=(response: { data: { time: string; windSpeed: number; R: string; }[]; }) => {
                    const rawData = response
 
                    const directionMap = {};
@@ -496,10 +542,11 @@ const y={
                            // @ts-ignore
                            rotation: directionMap[api.value(dims.R)],
                            position: point,
+                           // @ts-ignore
                            style: api.style({
                                stroke: '#555',
                                lineWidth: 1,
-                               fill: '#ff0000',
+                               fill: '#D33C3E'
                            }),
                        };
                    };
@@ -520,13 +567,12 @@ const y={
                                    ' ' +
                                    echarts.format.formatTime('hh:mm', params[0].value[dims.time]),
                                    '风速：' + params[0].value[dims.windSpeed],
-                                   '风向：' + params[0].value[dims.R],
                                ].join('<br>');
                            },
                        },
                        xAxis: {
                            type: 'time',
-                           maxInterval: 3600 * 1000 * 24,
+                           data: date,
                            splitLine: {
                                lineStyle: {
                                    color: '#ddd',
@@ -556,32 +602,6 @@ const y={
                                splitLine: { show: false },
                            },
                        ],
-                       visualMap: {
-                           type: 'piecewise',
-                           orient: 'horizontal',
-                           left: 'center',
-                           bottom: 10,
-                           pieces: [
-                               {
-                                   gte: 17,
-                                   color: '#18BF12',
-                                   label: '大风（>=17节）',
-                               },
-                               {
-                                   gte: 11,
-                                   lt: 17,
-                                   color: '#f4e9a3',
-                                   label: '中风（11  ~ 17 节）',
-                               },
-                               {
-                                   lt: 11,
-                                   color: '#D33C3E',
-                                   label: '微风（小于 11 节）',
-                               },
-                           ],
-                           seriesIndex: 1,
-                           dimension: 1,
-                       },
                        dataZoom: [
                            {
                                type: 'inside',
@@ -601,6 +621,7 @@ const y={
                                    x: dims.time,
                                    y: dims.windSpeed,
                                },
+
                                data: data,
                                z: 10,
                            },
@@ -622,26 +643,134 @@ const y={
                    };
 
                    const myChart = echarts.init(document.getElementById('windSpeedandDirection'));
-                   myChart.setOption(option);
-                 myChart.on('dataZoom', function (params:any) {
-                   // 在这里处理数据范围变化的逻辑
-                     let start=0
-                     let end =100
-                      if(params.batch) {
-                          start = params.batch[0].start
-                          end = params.batch[0].end
-                      }else {
-                          start =params.start
-                          end =params.end
-                      }
+                   myChart.setOption(option)
 
-                     // console.log(params.batch[0].start )
-                     setwindchartzoom([start,end])
-
-                     // console.log('当前数据范围：', start, end);
-               });
                }
-               x(y)
+           fengsuchart(y)
+
+           const avaragedatmosphereChart = echarts.init(document.getElementById('avaragedatmosphere'))
+           avaragedatmosphereChart.setOption({
+               series: [
+                   {
+                       type: 'gauge',
+                       min: 80,
+                       max: 120,
+                       splitNumber: 10,
+                       radius: '80%',
+                       axisLine: {
+                           lineStyle: {
+                               color: [[1, '#f00']],
+                               width: 3
+                           }
+                       },
+                       splitLine: {
+                           distance: -18,
+                           length: 18,
+                           lineStyle: {
+                               color: '#f00'
+                           }
+                       },
+                       axisTick: {
+                           distance: -12,
+                           length: 10,
+                           lineStyle: {
+                               color: '#f00'
+                           }
+                       },
+                       axisLabel: {
+                           distance: -42,
+                           color: '#f00',
+                           fontSize: 25
+                       },
+                       anchor: {
+                           show: true,
+                           size: 20,
+                           itemStyle: {
+                               borderColor: '#000',
+                               borderWidth: 2
+                           }
+                       },
+                       pointer: {
+                           offsetCenter: [0, '10%'],
+                           icon:
+                               'path://M2090.36389,615.30999 L2090.36389,615.30999 C2091.48372,615.30999 2092.40383,616.194028 2092.44859,617.312956 L2096.90698,728.755929 C2097.05155,732.369577 2094.2393,735.416212 2090.62566,735.56078 C2090.53845,735.564269 2090.45117,735.566014 2090.36389,735.566014 L2090.36389,735.566014 C2086.74736,735.566014 2083.81557,732.63423 2083.81557,729.017692 C2083.81557,728.930412 2083.81732,728.84314 2083.82081,728.755929 L2088.2792,617.312956 C2088.32396,616.194028 2089.24407,615.30999 2090.36389,615.30999 Z',
+                           length: '115%',
+                           itemStyle: {
+                               color: '#000'
+                           }
+                       },
+                       detail: {
+                           valueAnimation: true,
+                           precision: 1
+                       },
+                       title: {
+                           offsetCenter: [0, '-50%']
+                       },
+                       data: [
+                           {
+                               value: averageatm ,
+                               name: 'kpa'
+                           }
+                       ]
+                   },
+                   {
+                       type: 'gauge',
+                       min: 80,
+                       max: 120,
+                       splitNumber: 4,
+                       axisLine: {
+                           lineStyle: {
+                               color: [[1, '#000']],
+                               width: 3
+                           }
+                       },
+                       splitLine: {
+                           distance: -3,
+                           length: 18,
+                           lineStyle: {
+                               color: '#000'
+                           }
+                       },
+                       axisTick: {
+                           distance: 0,
+                           length: 10,
+                           lineStyle: {
+                               color: '#000'
+                           }
+                       },
+                       axisLabel: {
+                           distance: 10,
+                           fontSize: 25,
+                           color: '#000'
+                       },
+                       pointer: {
+                           show: false
+                       },
+                       title: {
+                           show: false
+                       },
+                       anchor: {
+                           show: true,
+                           size: 14,
+                           itemStyle: {
+                               color: '#000'
+                           }
+                       }
+                   }
+               ],
+               title: {
+                   text: '年平均气压', // 主标题文本
+                   left: 'center', // 主标题距离左侧的位置，
+                   top: 'bottom', // 主标题位于图表顶部
+                   textStyle: {
+                       // 标题文本样式
+                       fontSize: 20, // 主标题字体大小
+                       fontWeight: 'bold', // 主标题字体粗细
+                       color: '#333', // 主标题颜色
+                   },
+               },
+           })
+
     }},[RootStore.epwStore.epwpreviewobject])
 
     useEffect(()=>{
@@ -733,7 +862,7 @@ const y={
                 </div>
                     <div className={classes.showingdiv} style={{marginTop:30}}>
                         <div id='windSpeedandDirection' className={classes.ganluChart}></div>
-                        <div className={classes.avaragedifferenceChart}></div>
+                        <div id='avaragedatmosphere' className={classes.avaragedifferenceChart}></div>
                     </div>
                 </div>}
         </div>

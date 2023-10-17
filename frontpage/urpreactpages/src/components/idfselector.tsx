@@ -8,7 +8,6 @@ import { observer } from "mobx-react-lite";
 import RootStore from '../store/store'
 import axios from "axios";
 import httpInfo from "../http/httpinfo";
-import {toJS} from "mobx";
 import Idfpreviewer from "./idfpreviewer";
 
 const useStyles = makeStyles((theme: Theme) =>

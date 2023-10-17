@@ -8,6 +8,7 @@ import IdfSelector from "../../components/idfselector";
 import EpwSelector from "../../components/epwselector";
 import RootStore from "../../store/store";
 import { observer } from "mobx-react-lite";
+import Paramset from "../../components/paramset";
 
 
 function getSteps() {
@@ -21,7 +22,7 @@ function getStepContent(stepIndex: number) {
         case 1:
             return <EpwSelector/>;
         case 2:
-            return '设置参数';
+            return <Paramset/>;
         default:
             return 'Unknown stepIndex';
     }
@@ -64,7 +65,7 @@ const Calculate=observer(()=> {
                 ) : (
                     <div>
                         <div className={classes.instructions}>{getStepContent(activeStep)}</div>
-                        <div>
+                        <div className={classes.buttonsDiv}>
                             <Button
                                 disabled={activeStep === 0}
                                 onClick={handleBack}

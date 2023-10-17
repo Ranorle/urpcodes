@@ -17,6 +17,9 @@ export const useCalculateStyles = makeStyles((theme: Theme) =>
         },
         StepLabel:{
 
+        },
+        buttonsDiv:{
+          marginTop:50,
         }
     }),
 );
