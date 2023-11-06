@@ -1,6 +1,6 @@
 library(eplusr)
-use_eplus("E:/EnergyPlus")
-path <- "E:/EnergyPlus/inputidf/1ZoneDataCenterCRAC_wApproachTemp2.idf"
+use_eplus("/Applications/EnergyPlus-9-6-0")
+path <- "/Users/dengshengyuan/Desktop/EnergyPlusInput/idfinput/newjuminlou.idf"
 model <- read_idf(path)
 geom <- model$geometry()
 

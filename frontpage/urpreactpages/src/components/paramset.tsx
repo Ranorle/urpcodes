@@ -1,5 +1,8 @@
+import RootStore from '../store/store'
 
 const paramSet=()=>{
-    return<div>666</div>
+    const epwStore=RootStore.epwStore
+    const idfStore=RootStore.idfStore
+    return<div></div>
 }
 export default paramSet

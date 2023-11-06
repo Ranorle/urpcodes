@@ -20,6 +20,7 @@ import HomeIcon from '@material-ui/icons/Home';
 import {AppuseStyles} from './Appstyle'
 import {ThemeProvider,createTheme } from "@material-ui/core/styles";
 import Calculate from "../calculate/calculate";
+import Homepage from "../homepage/homepage";
 
 const Layout:React.FC =()=>{
   const classes = AppuseStyles();
@@ -96,6 +97,10 @@ const router=createBrowserRouter([
     path:"/",
     element:<Layout/>,
     children:[
+        {
+          path:"/",
+          element:Homepage
+        },
       {
         path:"/singleCalculate",
         element:<Calculate/>

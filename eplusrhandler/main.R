@@ -1,9 +1,9 @@
 
 	library(eplusr)
-	use_eplus("E:/EnergyPlus")
-	path_idf <- "E:/EnergyPlus/inputidf/1ZoneDataCenterCRAC_wApproachTemp2.idf"
-	path_epw <- "E:/EnergyPlus/inputweather/USA_CA_San.Francisco.Intl.AP.724940_TMY3.epw"
+	use_eplus("/Applications/EnergyPlus-9-6-0")
+	path_idf <- "/Users/dengshengyuan/Desktop/EnergyPlusInput/idfinput/wenjiaojianzhuchuban.idf"
+	path_epw <- "/Users/dengshengyuan/Desktop/EnergyPlusInput/epwinput/CHN_Beijing.Beijing.545110_CSWD.epw"
 	model <- read_idf(path_idf)
-	job <- model$run(path_epw, dir = "E:/EnergyPlus/output/20230830225020" , wait = TRUE)
+	job <- model$run(path_epw, dir = "/Users/dengshengyuan/Desktop/EnergyPlusOutput/20231029092529" , wait = TRUE)
 	job
 	

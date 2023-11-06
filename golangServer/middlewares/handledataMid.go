@@ -93,6 +93,7 @@ func HandleDataMid(c *gin.Context) {
 		}
 	}
 	header := records[0]
+	log.Println(header)
 	numColumns := len(header)
 
 	columnNames := mysql.GenerateExcelColumnNames(numColumns)
